@@ -4,7 +4,7 @@ import com.ecommerce.order.model.OrderRequest;
 import com.ecommerce.order.producer.OrderProducer;
 import com.ecommerce.order.repository.CartRepository;
 import com.ecommerce.order.repository.OrderRepository;
-import com.ecommerce.shared.enums.OrderStatus;
+import com.ecommerce.shared.enums.OrderStatusEnum;
 import com.ecommerce.shared.events.OrderPlacedEvent;
 import com.ecommerce.shared.model.Order;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,10 +28,13 @@ import java.util.UUID;
 public class OrderService {
 
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
     @Autowired
     private OrderRepository orderRepository;
+
     @Autowired
     private CartRepository cartRepository;
+
     @Autowired
     private OrderProducer orderProducer;
 
@@ -43,7 +46,7 @@ public class OrderService {
                     order.setUserId(userId);
                     order.setItems(cart.getItems());
                     order.setTotalAmount(cart.calculateTotal());
-                    order.setStatus(OrderStatus.PENDING);
+                    order.setStatus(OrderStatusEnum.PENDING);
                     order.setCreatedDateTime(LocalDateTime.now().toString());
                     order.setDeliveryInfo(request.getDeliveryInfo());
                     order.setBillingInfo(request.getBillingInfo());

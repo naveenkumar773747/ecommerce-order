@@ -3,6 +3,7 @@ package com.ecommerce.order.producer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.kafka.sender.KafkaSender;
@@ -13,13 +14,14 @@ import reactor.kafka.sender.SenderResult;
 @Service
 public class UserProducer {
 
-    private static final String TOPIC = "user_topic";
+    @Value("${spring.kafka.topic.user}")
+    private String topic;
 
     @Autowired
     private KafkaSender<String, String> kafkaSender;
 
     public Mono<String> sendMessage(String message) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
         SenderRecord<String, String, String> senderRecord = SenderRecord.create(record, message);
 
         return kafkaSender.send(Mono.just(senderRecord))
