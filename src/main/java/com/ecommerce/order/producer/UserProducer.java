@@ -20,6 +20,12 @@ public class UserProducer {
     @Autowired
     private KafkaSender<String, String> kafkaSender;
 
+    /**
+     * This method takes message as a string format of UserInfo and publishes to kafka topic.
+     *
+     * @param message : String format of UserInfo
+     * @return String mono : UserInfo string
+     */
     public Mono<String> sendMessage(String message) {
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
         SenderRecord<String, String, String> senderRecord = SenderRecord.create(record, message);

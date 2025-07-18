@@ -23,6 +23,12 @@ public class OrderProducer {
     @Autowired
     private KafkaSender<String, String> kafkaSender;
 
+    /**
+     * This method takes message as a string format of OrderPlacedEvent and publishes to kafka topic.
+     *
+     * @param message : String format of OrderPlacedEvent
+     * @return String mono : OrderPlacedEvent string
+     */
     public Mono<String> sendMessage(String message) {
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
         SenderRecord<String, String, String> senderRecord = SenderRecord.create(record, message);

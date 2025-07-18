@@ -16,17 +16,26 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-//@Slf4j
 public class OrderHandler {
 
     private static final Logger log = LoggerFactory.getLogger(OrderHandler.class);
+
     @Autowired
     private CartService cartService;
+
     @Autowired
     private OrderService orderService;
+
     @Autowired
     private OrderProducer orderProducer;
 
+    /**
+     * This method takes ServerRequest that contains CartItem in the request body and userId in the path variable to add
+     * the item into cart.
+     *
+     * @param request : ServerRequest containing CartItem and userId
+     * @return ServerResponse mono : with the cart details
+     */
     public Mono<ServerResponse> addItemToCart(ServerRequest request) {
         String userId = request.pathVariable("userId");
         return request.bodyToMono(CartItem.class)
@@ -35,6 +44,13 @@ public class OrderHandler {
                 .flatMap(cart -> ServerResponse.ok().bodyValue(cart));
     }
 
+    /**
+     * This method takes ServerRequest that contains CartItem in the body and userId, productId in the path variables to
+     * update the item details in cart.
+     *
+     * @param request : ServerRequest containing CartItem, userId and productId
+     * @return ServerResponse mono : with the updated cart details
+     */
     public Mono<ServerResponse> updateCartItem(ServerRequest request) {
         String userId = request.pathVariable("userId");
         String productId = request.pathVariable("productId");
@@ -44,6 +60,13 @@ public class OrderHandler {
                 .flatMap(cart -> ServerResponse.ok().bodyValue(cart));
     }
 
+    /**
+     * This method takes ServerRequest that contains userId and productId in the path variables to
+     * remove a specific item in cart.
+     *
+     * @param request : ServerRequest containing CartItem, userId and productId
+     * @return ServerResponse mono : with the updated cart details
+     */
     public Mono<ServerResponse> removeCartItem(ServerRequest request) {
         String userId = request.pathVariable("userId");
         String productId = request.pathVariable("productId");
@@ -52,6 +75,12 @@ public class OrderHandler {
                 .flatMap(cart -> ServerResponse.ok().bodyValue(cart));
     }
 
+    /**
+     * This method takes ServerRequest that contains userId in the path variables to retrieve all the items in cart.
+     *
+     * @param request : ServerRequest containing userId
+     * @return ServerResponse mono : with the updated cart details
+     */
     public Mono<ServerResponse> getCart(ServerRequest request) {
         String userId = request.pathVariable("userId");
         return cartService.getCart(userId)
@@ -59,6 +88,13 @@ public class OrderHandler {
                 .flatMap(cart -> ServerResponse.ok().bodyValue(cart));
     }
 
+    /**
+     * This method takes ServerRequest that contains OrderRequest in the body and userId in the path variable to
+     * handle in placing a new order.
+     *
+     * @param request : ServerRequest containing order and userId
+     * @return ServerResponse mono : with order confirmation
+     */
     public Mono<ServerResponse> placeOrder(ServerRequest request) {
         String userId = request.pathVariable("userId");
         return request.bodyToMono(OrderRequest.class)
@@ -67,6 +103,12 @@ public class OrderHandler {
                 .flatMap(saved -> ServerResponse.ok().bodyValue(saved));
     }
 
+    /**
+     * This method takes ServerRequest that contains userId in the path variable to retrieve all the orders of a user.
+     *
+     * @param request : ServerRequest containing userId
+     * @return ServerResponse mono : with all the orders of a user
+     */
     public Mono<ServerResponse> getUserOrders(ServerRequest request) {
         String userId = request.pathVariable("userId");
         return orderService.getOrdersByUser(userId)
@@ -75,6 +117,12 @@ public class OrderHandler {
                 .flatMap(list -> ServerResponse.ok().bodyValue(list));
     }
 
+    /**
+     * This method takes ServerRequest that contains orderId in the path variable to retrieve the order details.
+     *
+     * @param request : ServerRequest containing orderId
+     * @return ServerResponse mono : with the order details
+     */
     public Mono<ServerResponse> getOrderById(ServerRequest request) {
         String orderId = request.pathVariable("orderId");
         return orderService.getOrderById(orderId)

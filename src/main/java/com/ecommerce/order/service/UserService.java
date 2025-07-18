@@ -27,6 +27,12 @@ public class UserService {
     @Autowired
     private UserProducer userProducer;
 
+    /**
+     * This method takes UserInfo to create a new user
+     *
+     * @param user : UserInfo details
+     * @return UserInfo mono : with the UserInfo details
+     */
     public Mono<UserInfo> addUser(UserInfo user) {
         return Mono.justOrEmpty(user)
                 .flatMap(userInfo ->
@@ -43,11 +49,22 @@ public class UserService {
                 );
     }
 
+    /**
+     * This method takes userId to retrieve a user
+     *
+     * @param userId : userId of a user
+     * @return UserInfo mono : with the UserInfo details
+     */
     public Mono<UserInfo> getUserById(String userId) {
         return Mono.justOrEmpty(userId)
                 .flatMap(userRepository::findById);
     }
 
+    /**
+     * This method doesn't take any parameters and retrieve all the users in DB
+     *
+     * @return UserInfo flux : with all the UserInfo details
+     */
     public Flux<UserInfo> getAllUsers() {
         return userRepository.findAll();
     }

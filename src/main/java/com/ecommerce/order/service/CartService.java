@@ -15,9 +15,17 @@ import reactor.core.publisher.Mono;
 public class CartService {
 
     private static final Logger log = LoggerFactory.getLogger(CartService.class);
+
     @Autowired
     private CartRepository cartRepository;
 
+    /**
+     * This method takes CartItem and userId to add the item into cart.
+     *
+     * @param userId : userId of a user
+     * @param item   : CartItem details
+     * @return Cart mono : with the cart details
+     */
     public Mono<Cart> addItem(String userId, CartItem item) {
         return cartRepository.findByUserId(userId)
                 .flatMap(cart -> {
@@ -28,6 +36,14 @@ public class CartService {
                 });
     }
 
+    /**
+     * This method takes userId, productId and CartItem to update the item in cart.
+     *
+     * @param userId    : userId of a user
+     * @param productId : productId of a product
+     * @param item      : CartItem details
+     * @return Cart mono : with the updated cart details
+     */
     public Mono<Cart> updateItem(String userId, String productId, CartItem item) {
         return cartRepository.findById(userId)
                 .flatMap(cart -> {
@@ -36,6 +52,13 @@ public class CartService {
                 });
     }
 
+    /**
+     * This method takes userId, productId to remove the item from cart.
+     *
+     * @param userId    : userId of a user
+     * @param productId : productId of a product
+     * @return Cart mono : with the updated cart details
+     */
     public Mono<Cart> removeItem(String userId, String productId) {
         return cartRepository.findByUserId(userId)
                 .flatMap(cart -> {
@@ -44,6 +67,12 @@ public class CartService {
                 });
     }
 
+    /**
+     * This method takes userId to retrieve the cart details
+     *
+     * @param userId : userId of a user
+     * @return Cart mono : with the updated cart details
+     */
     public Mono<Cart> getCart(String userId) {
         return cartRepository.findByUserId(userId);
     }

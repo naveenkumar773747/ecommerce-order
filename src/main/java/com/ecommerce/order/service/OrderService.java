@@ -1,5 +1,6 @@
 package com.ecommerce.order.service;
 
+import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.model.OrderRequest;
 import com.ecommerce.order.producer.OrderProducer;
 import com.ecommerce.order.repository.CartRepository;
@@ -38,6 +39,16 @@ public class OrderService {
     @Autowired
     private OrderProducer orderProducer;
 
+    @Autowired
+    private OrderMapper orderMapper;
+
+    /**
+     * This method takes OrderRequest and userId for placing a new order.
+     *
+     * @param userId  : userId of a user
+     * @param request : OrderRequest details
+     * @return Order mono : with order confirmation
+     */
     public Mono<Order> placeOrder(String userId, OrderRequest request) {
         return cartRepository.findByUserId(userId)
                 .flatMap(cart -> {
@@ -51,15 +62,7 @@ public class OrderService {
                     order.setDeliveryInfo(request.getDeliveryInfo());
                     order.setBillingInfo(request.getBillingInfo());
 
-
-                    OrderPlacedEvent event = new OrderPlacedEvent();
-                    event.setOrderId(order.getOrderId());
-                    event.setUserId(order.getUserId());
-                    event.setItems(order.getItems());
-                    event.setTotalAmount(order.getTotalAmount());
-                    event.setDeliveryInfo(order.getDeliveryInfo());
-                    event.setBillingInfo(order.getBillingInfo());
-                    event.setCreatedDateTime(order.getCreatedDateTime());
+                    OrderPlacedEvent event = orderMapper.mapOrderToEvent(order);
 
                     ObjectMapper objectMapper = new ObjectMapper();
                     objectMapper.registerModule(new JavaTimeModule());
@@ -81,10 +84,22 @@ public class OrderService {
                 });
     }
 
+    /**
+     * This method takes userId to retrieve all the orders of a user
+     *
+     * @param userId : userId of a user
+     * @return Order flux : with all the orders
+     */
     public Flux<Order> getOrdersByUser(String userId) {
         return orderRepository.findOrdersByUserId(userId);
     }
 
+    /**
+     * This method takes orderId to retrieve the order details
+     *
+     * @param orderId : orderId of an order
+     * @return Order mono : with Order details
+     */
     public Mono<Order> getOrderById(String orderId) {
         return orderRepository.findById(orderId);
     }
