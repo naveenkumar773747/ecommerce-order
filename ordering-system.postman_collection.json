@@ -1,0 +1,160 @@
+{
+	"info": {
+		"_postman_id": "22037d20-3b36-4f4f-a702-afa6692b8d8b",
+		"name": "Ordering System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31150809"
+	},
+	"item": [
+		{
+			"name": "Add Item to Cart",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"productId\": \"p123\",\n  \"productName\": \"Laptop\",\n  \"quantity\": 1,\n  \"pricePerUnit\": 999.99\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/cart/{{userId}}/items",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"cart",
+						"{{userId}}",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Place Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"deliveryInfo\": {\n    \"addressLine1\": \"123 Main St\",\n    \"addressLine2\": \"Apt 4B\",\n    \"city\": \"Hyderabad\",\n    \"state\": \"Telangana\",\n    \"pincode\": \"500001\",\n    \"contactNumber\": \"9876543210\"\n  },\n  \"billingInfo\": {\n    \"billingName\": \"Naveen Kumar\",\n    \"billingEmail\": \"naveen@example.com\",\n    \"billingPhone\": \"9876543210\",\n    \"billingAddress\": \"Same as delivery\",\n    \"paymentMethod\": \"UPI\"\n  }\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/orders/{{userId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"orders",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Cart",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/cart/{{userId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"cart",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Orders by User",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/orders/{{userId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"orders",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/orders/{{orderId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"orders",
+						"{{orderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":\"1\",\r\n    \"name\": \"Naveen Kumar\",\r\n    \"email\": \"naveen@mail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/users/add",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Users",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
