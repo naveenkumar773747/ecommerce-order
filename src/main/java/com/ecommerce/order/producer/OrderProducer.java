@@ -24,10 +24,10 @@ public class OrderProducer {
     private KafkaSender<String, String> kafkaSender;
 
     /**
-     * This method takes message as a string format of OrderPlacedEvent and publishes to kafka topic.
+     * This method takes message as a string format of OrderEvent and publishes to kafka topic.
      *
-     * @param message : String format of OrderPlacedEvent
-     * @return String mono : OrderPlacedEvent string
+     * @param message : String format of OrderEvent
+     * @return String mono : OrderEvent string
      */
     public Mono<String> sendMessage(String message) {
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);

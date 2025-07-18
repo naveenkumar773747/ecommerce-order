@@ -5,8 +5,9 @@ import com.ecommerce.order.model.OrderRequest;
 import com.ecommerce.order.producer.OrderProducer;
 import com.ecommerce.order.repository.CartRepository;
 import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.shared.enums.DeliveryTypeEnum;
 import com.ecommerce.shared.enums.OrderStatusEnum;
-import com.ecommerce.shared.events.OrderPlacedEvent;
+import com.ecommerce.shared.events.OrderEvent;
 import com.ecommerce.shared.model.Order;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,13 +57,14 @@ public class OrderService {
                     order.setOrderId(UUID.randomUUID().toString().split("-")[0]);
                     order.setUserId(userId);
                     order.setItems(cart.getItems());
-                    order.setTotalAmount(cart.calculateTotal());
-                    order.setStatus(OrderStatusEnum.PENDING);
+                    order.setTotalAmount(cart.calculateTotal() + (request.getDeliveryType().equals(DeliveryTypeEnum.EXPRESS) ? 25 : 0));
+                    order.setStatus(OrderStatusEnum.PLACED);
                     order.setCreatedDateTime(LocalDateTime.now().toString());
                     order.setDeliveryInfo(request.getDeliveryInfo());
                     order.setBillingInfo(request.getBillingInfo());
+                    order.setDeliveryType(request.getDeliveryType());
 
-                    OrderPlacedEvent event = orderMapper.mapOrderToEvent(order);
+                    OrderEvent event = orderMapper.mapOrderToEvent(order);
 
                     ObjectMapper objectMapper = new ObjectMapper();
                     objectMapper.registerModule(new JavaTimeModule());
