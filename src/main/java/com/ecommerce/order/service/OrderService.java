@@ -1,18 +1,16 @@
 package com.ecommerce.order.service;
 
 import com.ecommerce.order.mapper.OrderMapper;
+import com.ecommerce.order.mapper.PaymentMapper;
 import com.ecommerce.order.model.OrderRequest;
 import com.ecommerce.order.producer.OrderProducer;
+import com.ecommerce.order.producer.PaymentProducer;
 import com.ecommerce.order.repository.CartRepository;
 import com.ecommerce.order.repository.OrderRepository;
-import com.ecommerce.shared.enums.DeliveryTypeEnum;
-import com.ecommerce.shared.enums.OrderStatusEnum;
 import com.ecommerce.shared.events.OrderEvent;
 import com.ecommerce.shared.model.Order;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +19,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +37,16 @@ public class OrderService {
     private OrderProducer orderProducer;
 
     @Autowired
+    private PaymentProducer paymentProducer;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private OrderMapper orderMapper;
+
+    @Autowired
+    private PaymentMapper paymentMapper;
 
     /**
      * This method takes OrderRequest and userId for placing a new order.
@@ -53,36 +58,38 @@ public class OrderService {
     public Mono<Order> placeOrder(String userId, OrderRequest request) {
         return cartRepository.findByUserId(userId)
                 .flatMap(cart -> {
-                    Order order = new Order();
-                    order.setOrderId(UUID.randomUUID().toString().split("-")[0]);
-                    order.setUserId(userId);
-                    order.setItems(cart.getItems());
-                    order.setTotalAmount(cart.calculateTotal() + (request.getDeliveryType().equals(DeliveryTypeEnum.EXPRESS) ? 25 : 0));
-                    order.setStatus(OrderStatusEnum.PLACED);
-                    order.setCreatedDateTime(LocalDateTime.now().toString());
-                    order.setDeliveryInfo(request.getDeliveryInfo());
-                    order.setBillingInfo(request.getBillingInfo());
-                    order.setDeliveryType(request.getDeliveryType());
 
-                    OrderEvent event = orderMapper.mapOrderToEvent(order);
+                    Order order = orderMapper.getOrderFromCartAndOrderRequest(cart, request, userId);
 
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    objectMapper.registerModule(new JavaTimeModule());
-                    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                    String jsonEvent = null;
+                    OrderEvent orderEvent = orderMapper.mapOrderToOrderEvent(order);
+
+                    String jsonOrderEvent = null;
                     try {
-                        jsonEvent = objectMapper.writeValueAsString(event);
+                        jsonOrderEvent = objectMapper.writeValueAsString(orderEvent);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
 
-                    return orderProducer.sendMessage(jsonEvent)
+                    return orderProducer.sendMessage(jsonOrderEvent)
                             .flatMap(string -> orderRepository.save(order))
                             .doOnSuccess(saved -> {
                                 cart.setItems(new ArrayList<>());
                                 cartRepository.save(cart).subscribe();
                                 log.info("Order placed successfully for userId : {} having orderId : {}", userId, order.getOrderId());
-                            });
+                            })
+                            .flatMap(placedOrder ->
+                                    Mono.just(paymentMapper.mapOrderToPaymentEvent(placedOrder))
+                                            .flatMap(paymentEvent -> {
+                                                String jsonPaymentEvent = null;
+                                                try {
+                                                    jsonPaymentEvent = objectMapper.writeValueAsString(paymentEvent);
+                                                } catch (JsonProcessingException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                                return paymentProducer.sendMessage(jsonPaymentEvent)
+                                                        .map(string -> order);
+                                            }));
+
                 });
     }
 

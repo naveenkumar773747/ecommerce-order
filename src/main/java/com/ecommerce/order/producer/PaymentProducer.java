@@ -13,21 +13,21 @@ import reactor.kafka.sender.SenderResult;
 
 
 @Service
-public class OrderProducer {
+public class PaymentProducer {
 
-    private static final Logger log = LoggerFactory.getLogger(OrderProducer.class);
+    private static final Logger log = LoggerFactory.getLogger(PaymentProducer.class);
 
-    @Value("${spring.kafka.topic.order}")
+    @Value("${spring.kafka.topic.payment}")
     private String topic;
 
     @Autowired
     private KafkaSender<String, String> kafkaSender;
 
     /**
-     * This method takes message as a string format of OrderEvent and publishes to kafka topic.
+     * This method takes message as a string format of PaymentEvent and publishes to kafka topic.
      *
-     * @param message : String format of OrderEvent
-     * @return String mono : OrderEvent string
+     * @param message : String format of PaymentEvent
+     * @return String mono : PaymentEvent string
      */
     public Mono<String> sendMessage(String message) {
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
@@ -37,7 +37,7 @@ public class OrderProducer {
                 .next()
                 .map(SenderResult::correlationMetadata)
                 .map(meta -> "Message sent with metadata: " + meta)
-                .doOnNext(info -> log.info("Published Order Event message to topic : {} : {}", topic, message))
+                .doOnNext(info -> log.info("Published Payment Event message to topic : {} : {}", topic, message))
                 .onErrorReturn("Failed to send message");
     }
 }
