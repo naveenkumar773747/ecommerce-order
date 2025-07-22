@@ -34,6 +34,7 @@ public class UserProducer {
                 .next()
                 .map(SenderResult::correlationMetadata)
                 .map(meta -> "Message sent with metadata: " + meta)
+                .doOnNext(info -> log.info("Published User Event message to topic : {} : {}", topic, message))
                 .onErrorReturn("Failed to send message");
     }
 }

@@ -7,10 +7,9 @@ import com.ecommerce.order.producer.OrderProducer;
 import com.ecommerce.order.producer.PaymentProducer;
 import com.ecommerce.order.repository.CartRepository;
 import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.order.util.JsonUtil;
 import com.ecommerce.shared.events.OrderEvent;
 import com.ecommerce.shared.model.Order;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,13 +39,13 @@ public class OrderService {
     private PaymentProducer paymentProducer;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private OrderMapper orderMapper;
 
     @Autowired
     private PaymentMapper paymentMapper;
+
+    @Autowired
+    private JsonUtil jsonUtil;
 
     /**
      * This method takes OrderRequest and userId for placing a new order.
@@ -63,33 +62,21 @@ public class OrderService {
 
                     OrderEvent orderEvent = orderMapper.mapOrderToOrderEvent(order);
 
-                    String jsonOrderEvent = null;
-                    try {
-                        jsonOrderEvent = objectMapper.writeValueAsString(orderEvent);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    return orderProducer.sendMessage(jsonOrderEvent)
-                            .flatMap(string -> orderRepository.save(order))
-                            .doOnSuccess(saved -> {
-                                cart.setItems(new ArrayList<>());
-                                cartRepository.save(cart).subscribe();
-                                log.info("Order placed successfully for userId : {} having orderId : {}", userId, order.getOrderId());
-                            })
-                            .flatMap(placedOrder ->
-                                    Mono.just(paymentMapper.mapOrderToPaymentEvent(placedOrder))
-                                            .flatMap(paymentEvent -> {
-                                                String jsonPaymentEvent = null;
-                                                try {
-                                                    jsonPaymentEvent = objectMapper.writeValueAsString(paymentEvent);
-                                                } catch (JsonProcessingException e) {
-                                                    throw new RuntimeException(e);
-                                                }
-                                                return paymentProducer.sendMessage(jsonPaymentEvent)
-                                                        .map(string -> order);
-                                            }));
-
+                    return jsonUtil.toJson(orderEvent)
+                            .flatMap(jsonOrderEvent -> orderProducer.sendMessage(jsonOrderEvent)
+                                    .flatMap(string -> orderRepository.save(order))
+                                    .doOnSuccess(saved -> {
+                                        cart.setItems(new ArrayList<>());
+                                        cartRepository.save(cart).subscribe();
+                                        log.info("Order placed successfully for userId : {} having orderId : {}", userId, order.getOrderId());
+                                    })
+                                    .flatMap(placedOrder -> Mono.just(paymentMapper.mapOrderToPaymentEvent(placedOrder))
+                                            .flatMap(paymentEvent ->
+                                                    jsonUtil.toJson(paymentEvent)
+                                                            .flatMap(jsonPaymentEvent ->
+                                                                    paymentProducer.sendMessage(jsonPaymentEvent)
+                                                                            .map(string -> order))
+                                            )));
                 });
     }
 

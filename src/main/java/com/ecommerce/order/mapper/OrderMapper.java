@@ -27,7 +27,7 @@ public abstract class OrderMapper {
         order.setOrderId(UUID.randomUUID().toString().split("-")[0]);
         order.setUserId(userId);
         order.setItems(cart.getItems());
-        order.setTotalAmount(cart.calculateTotal() + (request.getDeliveryType().equals(DeliveryTypeEnum.EXPRESS) ? 25 : 0));
+        order.setTotalAmount(cart.getTotalCartAmount() + (request.getDeliveryType().equals(DeliveryTypeEnum.EXPRESS) ? 25 : 0));
         order.setStatus(OrderStatusEnum.PLACED);
         order.setCreatedDateTime(LocalDateTime.now().toString());
         order.setDeliveryInfo(request.getDeliveryInfo());
