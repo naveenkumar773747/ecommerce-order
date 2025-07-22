@@ -1,0 +1,252 @@
+openapi: 3.0.1
+info:
+  title: Ordering System API
+  description: API docs for the ordering system
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+paths:
+  /cart/{userId}/items:
+    post:
+      summary: Add item to cart
+      operationId: addToCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+        required: true
+      responses:
+        '200':
+          description: Item added to cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /cart/{userId}:
+    get:
+      summary: View cart contents
+      operationId: getCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
+      responses:
+        '200':
+          description: Cart retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /cart/{userId}/update/{productId}:
+    put:
+      summary: Update item quantity in cart
+      operationId: updateCartItem
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+        required: true
+      responses:
+        '200':
+          description: Item quantity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /cart/{userId}/remove/{productId}:
+    delete:
+      summary: Remove item from cart
+      operationId: removeCartItem
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item removed from cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /order/{userId}:
+    post:
+      summary: Place an order
+      operationId: placeOrder
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+        required: true
+      responses:
+        '201':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid address or billing info
+  /orders/{orderId}:
+    get:
+      summary: Get order by ID
+      operationId: getOrderById
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: ORD123456
+      responses:
+        '200':
+          description: Order details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
+components:
+  schemas:
+    OrderRequest:
+      type: object
+      properties:
+        deliveryInfo:
+          $ref: '#/components/schemas/DeliveryInfo'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfo'
+        deliveryType:
+          type: string
+          enum:
+            - NORMAL
+            - EXPRESS
+    DeliveryInfo:
+      type: object
+      properties:
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        pincode:
+          type: string
+        contactNumber:
+          type: string
+    BillingInfo:
+      type: object
+      properties:
+        billingName:
+          type: string
+        billingEmail:
+          type: string
+        billingPhone:
+          type: string
+        billingAddress:
+          type: string
+        paymentMethod:
+          type: string
+          enum:
+            - CREDIT_CARD
+            - DEBIT_CARD
+            - UPI
+            - CASH
+            - WALLET
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+    CartItem:
+      type: object
+      properties:
+        productId:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        pricePerUnit:
+          type: number
+          format: double
+    Order:
+      type: object
+      properties:
+        orderId:
+          type: string
+        userId:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        totalAmount:
+          type: number
+          format: double
+        deliveryInfo:
+          $ref: '#/components/schemas/DeliveryInfo'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfo'
+        deliveryType:
+          type: string
+          enum:
+            - NORMAL
+            - EXPRESS
+        status:
+          type: string
+          enum:
+            - CREATED
+            - PLACED
+            - CONFIRMED
+            - FAILED
+            - COMPLETED
+        createdDateTime:
+          type: string
