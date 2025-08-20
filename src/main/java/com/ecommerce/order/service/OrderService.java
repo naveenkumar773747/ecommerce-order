@@ -3,12 +3,12 @@ package com.ecommerce.order.service;
 import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.mapper.PaymentMapper;
 import com.ecommerce.order.model.OrderRequest;
-import com.ecommerce.order.producer.OrderProducer;
+import com.ecommerce.order.producer.NotificationProducer;
 import com.ecommerce.order.producer.PaymentProducer;
 import com.ecommerce.order.repository.CartRepository;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.order.util.JsonUtil;
-import com.ecommerce.shared.events.OrderEvent;
+import com.ecommerce.shared.events.NotificationEvent;
 import com.ecommerce.shared.model.Order;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -27,13 +27,13 @@ public class OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     @Autowired
+    private NotificationProducer notificationProducer;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
     private CartRepository cartRepository;
-
-    @Autowired
-    private OrderProducer orderProducer;
 
     @Autowired
     private PaymentProducer paymentProducer;
@@ -60,10 +60,10 @@ public class OrderService {
 
                     Order order = orderMapper.getOrderFromCartAndOrderRequest(cart, request, userId);
 
-                    OrderEvent orderEvent = orderMapper.mapOrderToOrderEvent(order);
+                    NotificationEvent notificationEvent = orderMapper.mapOrderToNotificationEvent(order);
 
-                    return jsonUtil.toJson(orderEvent)
-                            .flatMap(jsonOrderEvent -> orderProducer.sendMessage(jsonOrderEvent)
+                    return jsonUtil.toJson(notificationEvent)
+                            .flatMap(jsonNotificationEvent -> notificationProducer.sendMessage(jsonNotificationEvent)
                                     .flatMap(string -> orderRepository.save(order))
                                     .doOnSuccess(saved -> {
                                         cart.setItems(new ArrayList<>());

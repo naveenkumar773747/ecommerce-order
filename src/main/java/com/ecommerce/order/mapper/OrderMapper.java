@@ -3,10 +3,11 @@ package com.ecommerce.order.mapper;
 import com.ecommerce.order.model.OrderRequest;
 import com.ecommerce.shared.enums.DeliveryTypeEnum;
 import com.ecommerce.shared.enums.OrderStatusEnum;
-import com.ecommerce.shared.events.OrderEvent;
+import com.ecommerce.shared.events.NotificationEvent;
 import com.ecommerce.shared.model.Cart;
 import com.ecommerce.shared.model.Order;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -32,16 +33,17 @@ public abstract class OrderMapper {
         order.setCreatedDateTime(LocalDateTime.now().toString());
         order.setDeliveryInfo(request.getDeliveryInfo());
         order.setBillingInfo(request.getBillingInfo());
-        order.setDeliveryType(request.getDeliveryType());
+        order.setDeliveryTypeEnum(request.getDeliveryType());
 
         return order;
     }
 
     /**
-     * This abstract method takes Order to generate mapping implementation and return OrderEvent.
+     * This abstract method takes Order to generate mapping implementation and return NotificationEvent.
      *
      * @param order : Order details
-     * @return OrderEvent : OrderEvent
+     * @return NotificationEvent : NotificationEvent
      */
-    public abstract OrderEvent mapOrderToOrderEvent(Order order);
+    @Mapping(target = ".", source = "billingInfo")
+    public abstract NotificationEvent mapOrderToNotificationEvent(Order order);
 }

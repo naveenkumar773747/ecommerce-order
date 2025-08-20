@@ -5,19 +5,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderRecord;
 import reactor.kafka.sender.SenderResult;
 
 
-@Service
-public class OrderProducer {
+@Component
+public class NotificationProducer {
 
-    private static final Logger log = LoggerFactory.getLogger(OrderProducer.class);
+    private static final Logger log = LoggerFactory.getLogger(NotificationProducer.class);
 
-    @Value("${spring.kafka.topic.order}")
+    @Value("${spring.kafka.topic.notification}")
     private String topic;
 
     @Autowired
@@ -37,7 +37,7 @@ public class OrderProducer {
                 .next()
                 .map(SenderResult::correlationMetadata)
                 .map(meta -> "Message sent with metadata: " + meta)
-                .doOnNext(info -> log.info("Published Order Event message to topic : {} : {}", topic, message))
+                .doOnNext(info -> log.info("Published Notification Event message to topic : {} : {}", topic, message))
                 .onErrorReturn("Failed to send message");
     }
 }

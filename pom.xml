@@ -14,6 +14,18 @@
     <name>order</name>
     <description>Ordering System Service</description>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>2023.0.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <properties>
         <java.version>21</java.version>
     </properties>
@@ -37,6 +49,16 @@
             <artifactId>common-lib</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -67,8 +89,8 @@
             <artifactId>mapstruct</artifactId>
             <version>1.5.5.Final</version>
         </dependency>
-
     </dependencies>
+
 
     <build>
         <plugins>
@@ -91,6 +113,7 @@
                             <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
         </plugins>
