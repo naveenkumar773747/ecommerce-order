@@ -1,11 +1,3 @@
-spring:
-  application:
-    name: order-service
-  data:
-    mongodb:
-      database: ordering_database
-  kafka:
-    topic:
-      notification: order_topic
-      payment: payment_topic
-      user: user_topic
+KAFKA_PRODUCER_NOTIFICATION_TOPIC: order_topic
+KAFKA_PRODUCER_PAYMENT_TOPIC: payment_topic
+KAFKA_PRODUCER_USER_TOPIC: user_topic
