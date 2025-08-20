@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: order-service
+  data:
+    mongodb:
+      database: ordering_database
+  kafka:
+    topic:
+      notification: order_topic
+      payment: payment_topic
+      user: user_topic
