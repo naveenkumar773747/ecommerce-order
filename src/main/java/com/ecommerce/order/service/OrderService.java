@@ -62,21 +62,20 @@ public class OrderService {
 
                     NotificationEvent notificationEvent = orderMapper.mapOrderToNotificationEvent(order);
 
-                    return jsonUtil.toJson(notificationEvent)
-                            .flatMap(jsonNotificationEvent -> notificationProducer.sendMessage(jsonNotificationEvent)
-                                    .flatMap(string -> orderRepository.save(order))
-                                    .doOnSuccess(saved -> {
-                                        cart.setItems(new ArrayList<>());
-                                        cartRepository.save(cart).subscribe();
-                                        log.info("Order placed successfully for userId : {} having orderId : {}", userId, order.getOrderId());
-                                    })
-                                    .flatMap(placedOrder -> Mono.just(paymentMapper.mapOrderToPaymentEvent(placedOrder))
-                                            .flatMap(paymentEvent ->
-                                                    jsonUtil.toJson(paymentEvent)
-                                                            .flatMap(jsonPaymentEvent ->
-                                                                    paymentProducer.sendMessage(jsonPaymentEvent)
-                                                                            .map(string -> order))
-                                            )));
+                    return notificationProducer.sendMessage(notificationEvent)
+                            .flatMap(string -> orderRepository.save(order))
+                            .doOnSuccess(saved -> {
+                                cart.setItems(new ArrayList<>());
+                                cartRepository.save(cart).subscribe();
+                                log.info("Order placed successfully for userId : {} having orderId : {}", userId, order.getOrderId());
+                            })
+                            .flatMap(placedOrder -> Mono.just(paymentMapper.mapOrderToPaymentEvent(placedOrder))
+                                    .flatMap(paymentEvent ->
+                                            jsonUtil.toJson(paymentEvent)
+                                                    .flatMap(jsonPaymentEvent ->
+                                                            paymentProducer.sendMessage(jsonPaymentEvent)
+                                                                    .map(string -> order))
+                                    ));
                 });
     }
 
